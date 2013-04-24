@@ -1,4 +1,4 @@
-#!/home/ghost/source/glimpse/glimpse-cli -f
+#!./glimpse-cli -f
 
 echo ${1} ${2}
 echo "==================Known Types before import integer=============="
