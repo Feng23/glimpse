@@ -1,7 +1,7 @@
-#include <readline/readline.h>
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
+#include <readline/readline.h>
 #include <init.h>
 #include <typesystem.h>
 #include <pluginloader.h>
