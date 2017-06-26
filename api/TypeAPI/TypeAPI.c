@@ -1,16 +1,35 @@
+/* TypeAPI.c -   
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
 #include <TypeAPI.h>
-#include <pluginloader.h>
-#include <symbol.h>
-#include <strpool.h>
-#include <typeparser.h>
-#include <typesystem.h>
+#include <glimpse/pluginloader.h>
+#include <glimpse/symbol.h>
+#include <glimpse/strpool.h>
+#include <glimpse/typeparser.h>
+#include <glimpse/typesystem.h>
 int Glimpse_TypeAPI_PthreadMock(void* data){}
 int Glimpse_TypeAPI_AliasType(const char* type, const char* name)
 {
 	GlimpseTypeDesc_t* desc = glimpse_typeparser_parse_type(type);
-	if(NULL == desc) return EINVAILDARG;
+	if(NULL == desc) return GLIMPSE_EINVAILDARG;
 	int rc = glimpse_typeparser_alias(desc, name);
-	if(rc != ESUCCESS) glimpse_typesystem_typedesc_free(desc);
+	if(rc != GLIMPSE_ESUCCESS) glimpse_typesystem_typedesc_free(desc);
 	return rc;
 }
 int Glimpse_TypeAPI_PluginInit(void* data)
@@ -34,7 +53,7 @@ int Glimpse_TypeAPI_PluginInit(void* data)
 	meta->api_functions.StringDuplicate = glimpse_strpool_new;
 	meta->api_functions.TypeAlias = Glimpse_TypeAPI_AliasType;
 	if(meta->plugin_functions.OnInitialized) return meta->plugin_functions.OnInitialized();
-	return 0;
+	return GLIMPSE_ESUCCESS;
 }
 
 GlimpseAPIMetaData_t TypeAPI_MetaData = {

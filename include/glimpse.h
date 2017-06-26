@@ -1,5 +1,4 @@
-/* log.c -   
- *
+/* 
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
  * This file is part of Glimpse, a fast, flexible key-value scanner.
@@ -16,17 +15,29 @@
  * If not, see http://www.gnu.org/licenses/.
  *
  */
-	
-#include <stdio.h>
-#include <stdarg.h>
+
+#ifndef __GLIMPSE_H__
+#include <glimpse/address.h>
+#include <glimpse/api.h>
+#include <glimpse/builtintype.h>
+#include <glimpse/chartable.h>
+#include <glimpse/data.h>
+#include <glimpse/def.h>
+#include <glimpse/future.h>
+#include <glimpse/init.h>
 #include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
-{
-	static const char LevelChar[] = "FEWNITD";
-	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
-	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-}
+#include <glimpse/plugin.h>
+#include <glimpse/pluginloader.h>
+#include <glimpse/profiler.h>
+#include <glimpse/retval.h>
+#include <glimpse/scanner.h>
+#include <glimpse/stack.h>
+#include <glimpse/strpool.h>
+#include <glimpse/symbol.h>
+#include <glimpse/thread.h>
+#include <glimpse/tree.h>
+#include <glimpse/typeparser.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/vector.h>
+#include <glimpse/version.h>
+#endif

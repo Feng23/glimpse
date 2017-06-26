@@ -1,16 +1,38 @@
+/* cli.c - Command Line Interface for Glimpse  
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
-#include <readline/readline.h>
-#include <init.h>
-#include <typesystem.h>
-#include <pluginloader.h>
 #include <stdarg.h>
-#include <typeparser.h>
-#include <scanner.h>
-#include <unistd.h>
-#include <strpool.h>
 #include <time.h>
+#include <unistd.h>
+
+#include <readline/readline.h>
+
+#include <glimpse/init.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/pluginloader.h>
+#include <glimpse/typeparser.h>
+#include <glimpse/scanner.h>
+#include <glimpse/strpool.h>
+#include <glimpse/version.h>
 #ifndef DEFAULT_PROMPT 
 #	define DEFAULT_PROMPT "Glimpse> "
 #endif
@@ -20,6 +42,7 @@
 #define STREQ(a,b) (0 == strcmp((a),(b)))
 FILE* fp_input = NULL;
 FILE* fp_output = NULL;;
+const char* prompt = DEFAULT_PROMPT;
 char* glimpse_cli_readline(const char* prompt)
 {
 	static char * buffer = NULL;
@@ -177,50 +200,54 @@ void glimpse_cli_error(const char* fmt, ...)
 {
 	va_list vp;
 	va_start(vp,fmt);
+	fputs("\033[33m",stderr);
 	vfprintf(stderr,fmt,vp);
-	fputc('\n', stderr);
+	fputs("\033[0m\n", stderr);
 	va_end(vp);
 }
 #define IFCMD(name) else if STREQ(argv[0],#name)
 void glimpse_cli_help(int argc, char** argv)
 {
 	if(argc == 0){
-		glimpse_cli_error("which command do you want ?");
-		glimpse_cli_error("Possible command:"); //TODO
-		glimpse_cli_error("define, display, help, import, list, quit, set");
+		glimpse_cli_error("define, display, help, import, list, parse , quit, set");
 	}
 	IFCMD(define){
-		glimpse_cli_error("define log kv_sep f_sep field1 type1 field2 type2 .... fieldN typeN name : define a log and alias the log type with name");
-		glimpse_cli_error("define type typedesc name : define type and alias it with name");
+		glimpse_cli_error("define log kv_sep f_sep field type [field type ....] name");
+		glimpse_cli_error("define type typedesc name");
 	}
 	IFCMD(help){
-		glimpse_cli_error("help <command>: show help for <command>");
+		glimpse_cli_error("help [command]");
 	}
 	IFCMD(import){
-		glimpse_cli_error("import plugin1 plugin2 ... pluginN: import plugin1,plugin2,...,pluginN");
+		glimpse_cli_error("import plugin [plugin ...]");
 	}
 	IFCMD(list){
-		glimpse_cli_error("list api: list all APIs glimpse currently support");
-		glimpse_cli_error("list alias: list all names that alisa with some types");
-		glimpse_cli_error("list log: list all log structures have been defined");
-		glimpse_cli_error("list path: list plugin search path");
-		glimpse_cli_error("list plugin: list info of plugin that have been loaded");
-		glimpse_cli_error("list type: list all known type ");
+		glimpse_cli_error("list api");
+		glimpse_cli_error("list alias");
+		glimpse_cli_error("list log");
+		glimpse_cli_error("list path");
+		glimpse_cli_error("list plugin");
+		glimpse_cli_error("list type");
 	}
 	IFCMD(display){
-		glimpse_cli_error("display log logname: print the structure of the log");
-		glimpse_cli_error("display type typename: print the description of typename");
+		glimpse_cli_error("display log logname");
+		glimpse_cli_error("display type typename");
 	}
 	IFCMD(quit){
-		glimpse_cli_error("quit: quit the program");
+		glimpse_cli_error("quit");
 	}
 	IFCMD(set){
-		glimpse_cli_error("set path path1 path2 path3 ... pathN : set the glimpse plugin search path to path1 .. pathN");
-		glimpse_cli_error("set defualt-log logname: set the scanner defualt log name ");
-		glimpse_cli_error("set output-path path: set where to output");
+		glimpse_cli_error("set path dirname [dirname ...]");
+		glimpse_cli_error("set defualt-log logname");
+		glimpse_cli_error("set output path");
+		glimpse_cli_error("set input path");
+		glimpse_cli_error("set output-format how address [how address ...]");
+	}
+	IFCMD(parse)
+	{
 	}
 	else{
-		glimpse_cli_error("no such content");
+		glimpse_cli_error("No Such Content");
 	}
 }
 extern GlimpseAPIMetaData_t* _glimpse_pluginloader_api_list[MAX_API_VERSION];
@@ -237,11 +264,11 @@ void glimpse_cli_list(int argc, char** argv)
 		char** ret = glimpse_typesystem_list_knowntypes();
 		if(NULL == ret)
 		{
-			glimpse_cli_error("failed to obtain type list");
+			glimpse_cli_error("Failed to Obtain Type List");
 			return;
 		}
 		int i;
-		puts("List of all known types:");
+		puts("List of all Known Types:");
 		for(i = 0;ret[i]; i ++)
 		{
 			printf("[%d]:\t%s\n",i,ret[i]);
@@ -252,14 +279,14 @@ void glimpse_cli_list(int argc, char** argv)
 	}
 	IFCMD(path){
 		int i;
-		puts("List of plugin search pathes:");
+		puts("List of Plugin Search Pathes:");
 		for(i = 0; glimpse_pluginloader_path[i]; i ++)
 			printf("[%d]:\t%s\n",i,glimpse_pluginloader_path[i]);
 		puts("");
 	}
 	IFCMD(api){
 		int i;
-		puts("List of available APIs:");
+		puts("List of Available APIs:");
 		for(i = 0; i < _glimpse_pluginloader_api_count; i ++)
 			printf("[%d]:\t%s\n",i,_glimpse_pluginloader_api_list[i]->APIVersion);
 		puts("");
@@ -313,11 +340,11 @@ void glimpse_cli_list(int argc, char** argv)
 }
 void glimpse_cli_import(int argc, char** argv)
 {
-	if(argc == 0) glimpse_cli_error("Usage: import <plugin_name>");
+	if(argc == 0) glimpse_cli_error("Usage: import plugin [plugin ...]");
 	int i;
 	for(i = 0; i < argc; i ++)
 	{
-		if(ESUCCESS != glimpse_pluginloader_load_plugin(argv[i]))
+		if(GLIMPSE_ESUCCESS != glimpse_pluginloader_load_plugin(argv[i]))
 			glimpse_cli_error("failed to import plugin `%s'", argv[i]);
 	}
 }
@@ -332,12 +359,12 @@ void glimpse_cli_define(int argc, char** argv)
 		}
 		GlimpseTypeDesc_t* desc = glimpse_typeparser_parse_type(argv[1]);
 		if(NULL != desc) glimpse_typeparser_alias(desc, glimpse_strpool_new(argv[2]));
-		else glimpse_cli_error("failed to alias type");
+		else glimpse_cli_error("Failed to Alias Type");
 	}
 	IFCMD(log){
 		if(argc < 4 || (argc&1))
 		{
-			glimpse_cli_error("Usage: define log sep_kv sep_f field1 type1 ... fieldN typeN name");
+			glimpse_cli_error("Usage: define log sep_kv sep_f key type [key type ...] name");
 			return;
 		}
 		GlimpseParseTree_t* tree = glimpse_scanner_register_tree(
@@ -350,12 +377,12 @@ void glimpse_cli_define(int argc, char** argv)
 				GlimpseTypeDesc_t* desc = glimpse_typeparser_parse_type(argv[i+1]);
 				if(NULL == desc)
 				{
-					glimpse_cli_error("failed to parse type %s", argv[i+1]);
+					glimpse_cli_error("Failed to Parse Type %s", argv[i+1]);
 					continue;
 				}
-				if(ESUCCESS != glimpse_tree_insert(tree, argv[i], desc))
+				if(GLIMPSE_ESUCCESS != glimpse_tree_insert(tree, argv[i], desc))
 				{
-					glimpse_cli_error("failed to insert the field %s into tree", argv[i]);
+					glimpse_cli_error("Failed to Insert the Field %s into Tree", argv[i]);
 					if(!desc->registered)glimpse_typesystem_typedesc_free(desc);
 				}
 			}
@@ -376,9 +403,9 @@ void glimpse_cli_display(int argc, char** argv)
 				glimpse_typesystem_typehandler_tostring(handler, buffer, sizeof(buffer));
 				puts(buffer);
 			}
-			else glimpse_cli_error("failed to query the type");
+			else glimpse_cli_error("Failed to Query Type");
 		}
-		else glimpse_cli_error("failed to parse type desc");
+		else glimpse_cli_error("Failed to Parse Type Description");
 	}
 	IFCMD(log){
 		char buffer[4096];
@@ -392,14 +419,14 @@ void glimpse_cli_display(int argc, char** argv)
 				glimpse_typesystem_typehandler_tostring(handler, buffer, sizeof(buffer));
 				puts(buffer);
 			}
-			else glimpse_cli_error("failed to query the type");
+			else glimpse_cli_error("Failed to Query Type");
 		}
-		else glimpse_cli_error("fialed to parse type desc");
+		else glimpse_cli_error("Fialed to Parse Type Description");
 	}
 }
 void glimpse_cli_set(int argc, char** argv)
 {
-	if(argc == 0) glimpse_cli_error("set [path|input|output|output-format|default-log]");
+	if(argc == 0) glimpse_cli_error("Usage: set [path|input|output|output-format|default-log]");
 	IFCMD(path){
 		int i;
 		for(i = 1; i < argc; i ++)
@@ -410,7 +437,7 @@ void glimpse_cli_set(int argc, char** argv)
 		if(argc == 2)
 			glimpse_scanner_set_defualt_tree(argv[1]);
 		else
-			glimpse_cli_error("set default-log name");
+			glimpse_cli_error("Usage: set default-log name");
 	}
 	IFCMD(input)
 	{
@@ -425,7 +452,7 @@ void glimpse_cli_set(int argc, char** argv)
 			}
 		}
 		else
-			glimpse_cli_error("set input [-|filename] (- stands for stdin");
+			glimpse_cli_error("Usage: set input filename //- means stdin");
 	}
 	IFCMD(output)
 	{
@@ -440,7 +467,7 @@ void glimpse_cli_set(int argc, char** argv)
 			}
 		}
 		else
-			glimpse_cli_error("set output [-|filename] (- stands for stdin");
+			glimpse_cli_error("Usage: set output filename //- means stdout");
 	}
 }
 void glimpse_cli_parse_arg(int argc, char** argv)
@@ -473,12 +500,14 @@ int glimpse_cli_do(int argc, char** argv)
 		IFCMD(display) glimpse_cli_display(argc-1, argv+1);
 		IFCMD(set) glimpse_cli_set(argc-1, argv+1);
 		IFCMD(parsearg) glimpse_cli_parse_arg(argc-1, argv+1);
-		else glimpse_cli_error("undefined command");
+		else glimpse_cli_error("Undefined Command");
 		return 0;
 }
 void glimpse_cli_interactive()
 {
-	const char* prompt = DEFAULT_PROMPT;
+	glimpse_cli_error("Glimpse CLI Shell (lib%s %s)\nwith %s",glimpse_name, glimpse_version, glimpse_configure);
+	glimpse_cli_error("Type `help' for avaiable commands");
+	glimpse_cli_error("");
 	for(;;)
 	{
 		char* line = glimpse_cli_readline(prompt);
@@ -504,7 +533,7 @@ void glimpse_cli_interactive()
 			usleep(1000);
 			_interval = glimpse_profiler_rdtsc() - _interval;
 		}
-		glimpse_cli_error("execute time :%g ms",(end-start)*1.0/_interval);
+		glimpse_cli_error("%g ms",(end-start)*1.0/_interval);
 #endif
 	}
 }
@@ -536,7 +565,8 @@ int main(int argc, char** argv)
 	api_init();
 #endif
 	glimpse_pluginloader_path[0] = ".";
-	glimpse_pluginloader_path[1] = NULL;
+	glimpse_pluginloader_path[1] = GLIMPSE_CLI_DEFAULT_PATH;
+	glimpse_pluginloader_path[2] = NULL;
 	fp_input = stdin;
 	fp_output = stdout;
 	if(argc >= 3 && STREQ(argv[1],"-f"))

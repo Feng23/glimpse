@@ -1,4 +1,4 @@
-/* log.c -   
+/* retval.h - error values 
  *
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
@@ -17,16 +17,24 @@
  *
  */
 	
-#include <stdio.h>
-#include <stdarg.h>
-#include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
-{
-	static const char LevelChar[] = "FEWNITD";
-	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
-	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-}
+#ifndef __GLIMPSE_RETVAL_H__
+#define __GLIMPSE_RETVAL_H__
+#include <glimpse/future.h>
+#include <glimpse/def.h>
+#define GLIMPSE_ESUCCESS 0
+#define GLIMPSE_EINVAILDARG -1
+#define GLIMPSE_ETOOMANYAPI -2
+#define GLIMPSE_ETOOMANYTG -2
+#define GLIMPSE_EMEMORYLIMIT -2
+#define GLIMPSE_ENOTFOUND -3
+#define GLIMPSE_ESYMNOTFOUND -4
+#define GLIMPSE_EUNKNOWN -5
+#define GLIMPSE_EMALFORMEDAPI -6
+#define GLIMPSE_EINVALIDVERCODE -7
+#define GLIMPSE_EDEPEND -8
+#define GLIMPSE_EVERSION -9
+#define GLIMPSE_EMAILFORMEDTG -10
+#define GLIMPSE_ENOSYMBOL -11
+#define GLIMPSE_EDUPSYMBOL -12
+#define GLIMPSE_ELISTFULL -13
+#endif

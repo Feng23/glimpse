@@ -1,5 +1,24 @@
-#ifdef CHAR_HASH_TABLE
+/* chartable.h - A char-key hash table
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
 /* this file is deprecated, and may be removed in the future */
+#ifdef CHAR_HASH_TABLE
 #ifndef __CHARTABLE_H__
 #define __CHARTABLE_H__
 #include <future.h>
@@ -8,6 +27,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <def.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #ifndef GLIMPSE_CHARTABLE_CONFLICT_TOLERANCE
 #	define GLIMPSE_CHARTABLE_CONFLICT_TOLERANCE 1 /* the max chain length allowed */
 #endif
@@ -34,5 +58,8 @@ GlimpseCharTable_t* glimpse_chartable_new();
 void glimpse_chartable_free(GlimpseCharTable_t* table);
 int  glimpse_chartable_insert(GlimpseCharTable_t* table, uint8_t key ,void* value);
 void*  glimpse_chartable_find(GlimpseCharTable_t* table, uint8_t key);
+#endif
+#ifdef __cplusplus
+}
 #endif
 #endif

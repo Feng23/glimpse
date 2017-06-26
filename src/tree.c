@@ -1,7 +1,26 @@
-#include <tree.h>
+/* tree.c -   
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
 #include <string.h>
 #include <malloc.h>
-#include <retval.h>
+#include <glimpse/tree.h>
+#include <glimpse/retval.h>
 GlimpseTrieNode_t* glimpse_tree_trienode_new(int terminus)
 {
 	GlimpseTrieNode_t* ret = (GlimpseTrieNode_t*)malloc(sizeof(GlimpseTrieNode_t));
@@ -96,7 +115,7 @@ int glimpse_tree_set_sperator(GlimpseParseTree_t* tree, const char* f, const cha
 int glimpse_tree_set_sperator(GlimpseParseTree_t* tree, char f, char kv)
 #endif
 {
-	if(NULL == tree) return EINVAILDARG;
+	if(NULL == tree) return GLIMPSE_EINVAILDARG;
 #ifdef STRING_SEPERATOR_SUPPORT
 	if(NULL != f && strlen(f) != 0) tree->sep_f = f;
 	if(NULL != kv && strlen(kv) != 0) tree->sep_kv = kv;
@@ -104,11 +123,11 @@ int glimpse_tree_set_sperator(GlimpseParseTree_t* tree, char f, char kv)
 	tree->sep_f = f;
 	tree->sep_kv = kv;
 #endif
-	return ESUCCESS;
+	return GLIMPSE_ESUCCESS;
 }
 int glimpse_tree_insert(GlimpseParseTree_t* tree, const char* field, GlimpseTypeDesc_t* type)
 {
-	if(NULL == tree || NULL == field || NULL == type) return EINVAILDARG;
+	if(NULL == tree || NULL == field || NULL == type) return GLIMPSE_EINVAILDARG;
 	if(NULL == tree->root) tree->root = glimpse_tree_trienode_new(0); /* empty string not be term */
 	const char* p;
 	GlimpseTrieNode_t* cur = tree->root;
@@ -136,7 +155,7 @@ int glimpse_tree_insert(GlimpseParseTree_t* tree, const char* field, GlimpseType
 			if(trunc <  p - field) trunc = p - field;
 			strncpy(buffer, field, trunc);
 			GLIMPSE_LOG_ERROR("ambigous key name %s(new) and %s(old)", field, buffer);
-			return EINVAILDARG;
+			return GLIMPSE_EINVAILDARG;
 		}
 #ifdef CHAR_HASH_TABLE
 		GlimpseTrieNode_t* next = (GlimpseTrieNode_t*)glimpse_chartable_find(cur->s.child, val);
@@ -149,7 +168,7 @@ int glimpse_tree_insert(GlimpseParseTree_t* tree, const char* field, GlimpseType
 			if(NULL == new)
 			{
 				GLIMPSE_LOG_ERROR("can not create new trienode");
-				return EUNKNOWN;
+				return GLIMPSE_EUNKNOWN;
 			}
 #ifdef CHAR_HASH_TABLE
 			int rc = glimpse_chartable_insert(cur->s.child, val, new);
@@ -220,7 +239,7 @@ int glimpse_tree_insert(GlimpseParseTree_t* tree, const char* field, GlimpseType
 		size_t len = strlen(field) - 1;
 		strncpy(buffer, field, trunc);
 		GLIMPSE_LOG_ERROR("ambigous key name %s(new) and %s(old)", field, buffer);
-		return EINVAILDARG;
+		return GLIMPSE_EINVAILDARG;
 	}
 
 	uint8_t val = (uint8_t) tree->sep_kv;
@@ -236,7 +255,7 @@ int glimpse_tree_insert(GlimpseParseTree_t* tree, const char* field, GlimpseType
 		if(NULL == new)
 		{
 			GLIMPSE_LOG_ERROR("can not create new trienode");
-			return EUNKNOWN;
+			return GLIMPSE_EUNKNOWN;
 		}
 #ifdef CHAR_HASH_TABLE
 		int rc = glimpse_chartable_insert(cur->s.child, val, new);
@@ -254,21 +273,21 @@ int glimpse_tree_insert(GlimpseParseTree_t* tree, const char* field, GlimpseType
 	else if(next->term)
 	{
 		GLIMPSE_LOG_ERROR("duplicated field");
-		return EINVAILDARG;
+		return GLIMPSE_EINVAILDARG;
 	}
 	cur = next;
 #endif
 	if(!cur->term) /* check if cur->term == 1 */
 	{
 		GLIMPSE_LOG_ERROR("cur->term unexceptedly be 0");
-		return EUNKNOWN;
+		return GLIMPSE_EUNKNOWN;
 	}
 	cur->s.terminus.handler = glimpse_typesystem_query(type);
-	if(NULL == cur->s.terminus.handler) return EUNKNOWN;
+	if(NULL == cur->s.terminus.handler) return GLIMPSE_EUNKNOWN;
 	int rc;
 	rc = cur->s.terminus.idx = glimpse_data_model_insert(tree->model, cur->s.terminus.handler);
 	if(rc < 0) return rc;
-	return ESUCCESS;
+	return GLIMPSE_ESUCCESS;
 }
 GlimpseDataOffset_t glimpse_tree_query(GlimpseParseTree_t* tree, const char* key)
 {

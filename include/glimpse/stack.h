@@ -1,9 +1,32 @@
+/* stack.h - the type handler stack 
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
 #ifndef __STACK_H__
 #define __STACK_H__
 #ifdef HANDLER_STACK
 #include <typesystem.h>
 #include <def.h>
 #define GLIMPSE_MAX_STACK_DEPTH 1024   /* the max depth of parser recurrent */
+
+#ifdef __cplusplus
+extern "C"{
+#endif
 typedef struct _glimpse_stack_Frame{
 	GlimpseTypeHandler_t* handler;  /* the type handler used for parse in this level */
 	uint8_t	ret_req:1;    /* if ret_req == 1, the parser will terminate unconditionally */
@@ -89,6 +112,9 @@ static inline typeof(((GlimpseTypeHandler_t*)NULL)->parse) glimpse_stack_get_par
 			break;
 	}
 	if(handler->parse) return handler->parse;
+}
+#endif
+#ifdef __cplusplus
 }
 #endif
 #endif

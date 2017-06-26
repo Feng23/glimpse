@@ -1,12 +1,33 @@
-#include <typeparser.h>
-#include <retval.h>
-#include <string.h>
-#include <log.h>
-#include <vector.h>
-#include <tree.h>
-#include <scanner.h>
+/* typeparser.c -   
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+
 #include <stdio.h>
-#include <strpool.h>
+#include <string.h>
+
+#include <glimpse/typeparser.h>
+#include <glimpse/retval.h>
+#include <glimpse/log.h>
+#include <glimpse/vector.h>
+#include <glimpse/tree.h>
+#include <glimpse/scanner.h>
+#include <glimpse/strpool.h>
 GlimpseTypeAlias_t _glimpse_typeparser_alias_table[GLIMPSE_MAX_TYPE_ALIAS];
 int _glimpse_typeparser_alias_count = 0;
 static inline GlimpseTypeDesc_t* _glimpse_typeparser_find_alias(const char* name)
@@ -20,17 +41,17 @@ static inline GlimpseTypeDesc_t* _glimpse_typeparser_find_alias(const char* name
 int glimpse_typeparser_alias(GlimpseTypeDesc_t* desc, const char* name)
 {
 	GlimpseTypeHandler_t* handler = glimpse_typesystem_query(desc);
-	if(NULL == handler) return EUNKNOWN;
+	if(NULL == handler) return GLIMPSE_EUNKNOWN;
 	if(NULL != _glimpse_typeparser_find_alias(name))
 	{
 		GLIMPSE_LOG_ERROR("failed to alias name with type, because name %s confilicted", name);
-		return EINVAILDARG;
+		return GLIMPSE_EINVAILDARG;
 	}
 	_glimpse_typeparser_alias_table[_glimpse_typeparser_alias_count].type = handler->type;  /* all handler should be queried */
 	_glimpse_typeparser_alias_table[_glimpse_typeparser_alias_count].name = name;
 	_glimpse_typeparser_alias_count ++;
 	GLIMPSE_LOG_DEBUG("typename `%s' = typedesc at <0x%x>",name,desc);
-	return ESUCCESS;
+	return GLIMPSE_ESUCCESS;
 }
 
 static inline void _glimpse_typeparser_process_property(const char* name, const char* key, const char* value, GlimpseTypeDesc_t* desc)

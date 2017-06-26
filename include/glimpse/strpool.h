@@ -1,4 +1,4 @@
-/* log.c -   
+/* strpool.h - string pool, free memory automatically 
  *
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
@@ -17,16 +17,18 @@
  *
  */
 	
-#include <stdio.h>
-#include <stdarg.h>
-#include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
-{
-	static const char LevelChar[] = "FEWNITD";
-	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
-	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
+#ifndef __GLIMPSE_STRPOOL_H__
+#define __GLIMPSE_STRPOOL_H__
+#include <glimpse/retval.h>
+#include <glimpse/def.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+int glimpse_strpool_init();
+int glimpse_strpool_cleanup();
+char* glimpse_strpool_new(const char* str);
+#ifdef __cplusplus
 }
+#endif
+#endif

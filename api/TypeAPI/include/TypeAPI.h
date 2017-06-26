@@ -1,8 +1,32 @@
-#ifndef __TYPE_API_H__
-#define __TYPE_API_H__
-#include <api.h>
-#include <typesystem.h>
-#include <log.h>
+/* TypeAPI.h -   
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#ifndef __GLIMPSE_TYPE_API_H__
+#define __GLIMPSE_TYPE_API_H__
+#include <glimpse/api.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/log.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 GlimpseAPIData(TypeAPI)
 	//called by plugin
 	GlimpseAPIFunctions
@@ -36,11 +60,9 @@ void Glimpse_TypeAPI_init(void);
 #define StrDup(str) GlimpseAPICall(TypeAPI, StringDuplicate, str)
 #define Alias(t,n) GlimpseAPICall(TypeAPI, TypeAlias, t, n)
 
-#ifdef THREAD_SAFE
 #define DataLock(data) GlimpseAPICall(TypeAPI, DataObjLock, data)
 #define DataUnlock(data) GlimpseAPICall(TypeAPI, DataObjUnlock, data)
 #define DataTrylock(data) GlimpseAPICall(TypeAPI, DataObjTrylock, data)
-#endif
 
 #define PLUGIN_LOG(level,fmt,arg...) do{\
 	WriteLog(level,__FILE__,__FUNCTION__,__LINE__,fmt, ##arg);\
@@ -89,5 +111,8 @@ void Glimpse_TypeAPI_init(void);
 #	define PLUGIN_LOG_DEBUG(fmt,arg...) PLUGIN_LOG(DEBUG,fmt,##arg)
 #else
 #	define PLUGIN_LOG_DEBUG(...)
+#endif
+#ifdef __cplusplus
+}
 #endif
 #endif

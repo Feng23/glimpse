@@ -1,10 +1,33 @@
-#ifndef __SCANNER_H__
-#define __SCANNER_H__
-#include <tree.h>
-#include <thread.h>
-#include <def.h>
+/* scanner.h - the log scanner 
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#ifndef __GLIMPSE_SCANNER_H__
+#define __GLIMPSE_SCANNER_H__
+#include <glimpse/tree.h>
+#include <glimpse/thread.h>
+#include <glimpse/def.h>
 #ifndef GLIMPSE_SCANNER_MAX_LOG_NUM
 #	define GLIMPSE_SCANNER_MAX_LOG_NUM 1024 /* the max number user can register log */
+#endif
+
+#ifdef __cplusplus
+extern "C"{
 #endif
 typedef struct _glimpse_scanner_t{
 	uint16_t count;
@@ -28,6 +51,9 @@ int glimpse_scanner_set_defualt_tree(const char* name);  /* set the log you want
 GlimpseParseTree_t* glimpse_scanner_get_default_tree();
 void glimpse_scanner_set_before_scan_callback(typeof(((GlimpseScanner_t*)NULL)->before_scan) callback, void* userdata);
 void glimpse_scanner_set_after_scan_callback(typeof(((GlimpseScanner_t*)NULL)->after_scan) callback, void* userdata);
+
+#define GLIMPSE_SCANNER_DEFAULT 0
+#define GLIMPSE_SCANNER_CLEANUP 1
 /* you can use the function defined in typesystem.h and tree.h to add some key to parse 
  * and define its type */
 
@@ -35,4 +61,7 @@ void glimpse_scanner_set_after_scan_callback(typeof(((GlimpseScanner_t*)NULL)->a
 void glimpse_scanner_init();
 void glimpse_scanner_cleanup();
 
+#ifdef __cplusplus
+}
+#endif
 #endif

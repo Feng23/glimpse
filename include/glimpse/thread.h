@@ -1,4 +1,4 @@
-/* log.c -   
+/* thread.h -  thread related data 
  *
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
@@ -17,16 +17,31 @@
  *
  */
 	
-#include <stdio.h>
-#include <stdarg.h>
-#include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
-{
-	static const char LevelChar[] = "FEWNITD";
-	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
-	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
+#ifndef __GLIMPSE_THREAD_H__
+#define __GLIMPSE_THREAD_H__
+
+#include <stdint.h>
+
+#include <glimpse/future.h>
+#include <glimpse/stack.h>
+#include <glimpse/def.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+typedef struct _glimpse_thread_data{
+#ifdef HANDLER_STACK
+	GlimpseStack_t stack;
+#else
+	uint32_t is_term[256];
+	uint32_t __true__;
+#endif
+	/* add some other data here */
+} GlimpseThreadData_t;
+GlimpseThreadData_t* glimpse_thread_data_new();
+void glimpse_thread_data_free(GlimpseThreadData_t* data);
+void glimpse_thread_data_init(GlimpseThreadData_t* data);
+#ifdef __cplusplus
 }
+#endif
+#endif

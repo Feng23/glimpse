@@ -1,4 +1,4 @@
-/* log.c -   
+/* version.c -   
  *
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
@@ -17,16 +17,40 @@
  *
  */
 	
-#include <stdio.h>
-#include <stdarg.h>
-#include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
-{
-	static const char LevelChar[] = "FEWNITD";
-	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
-	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-}
+#include <glimpse/future.h>
+#define Y "=yes"
+#define N "=no"
+const char* glimpse_name = "glimpse";
+const char* glimpse_version = VERSION;
+const char* glimpse_configure = 
+"multi-char-seperator"
+#ifdef STRING_SEPERATOR_SUPPORT
+	Y
+#else
+	N
+#endif
+",parser-stack"
+#ifdef HANDLER_STACK
+	Y
+#else
+	N
+#endif
+",multi-threading"
+#ifdef THREAD_SAFE
+	Y
+#else
+	N
+#endif
+",lazy-instance"
+#ifdef LAZY_INSTANCE
+	Y
+#else
+	N
+#endif
+",char-table"
+#ifdef CHAR_HASH_TABLE
+	Y
+#else
+	N
+#endif
+;

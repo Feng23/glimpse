@@ -1,4 +1,4 @@
-/* log.c -   
+/* symbol.h - export & import a symbol  
  *
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
@@ -17,16 +17,25 @@
  *
  */
 	
-#include <stdio.h>
-#include <stdarg.h>
-#include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
-{
-	static const char LevelChar[] = "FEWNITD";
-	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
-	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
+#ifndef __GLIMPSE_SYMBOL_H__
+#define __GLIMPSE_SYMBOL_H__
+#include <glimpse/future.h>
+#include <glimpse/retval.h>
+#include <glimpse/def.h>
+#ifndef GLIMPSE_SYMBOL_MAX_SYMBOL_NUMBER
+#	define GLIMPSE_SYMBOL_MAX_SYMBOL_NUMBER 4099  /*a prime number*/
+#endif
+#ifndef GLIMPSE_SYMBOL_MAX_SYMBOL_LENGTH
+#	define GLIMPSE_SYMBOL_MAX_SYMBOL_LENGTH 128
+#endif
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+void glimpse_symbol_init();
+int glimpse_symbol_exportsymbol(const char* symname, void* address);
+void* glimpse_symbol_importsymbol(const char* symname);
+#ifdef __cplusplus
 }
+#endif
+#endif

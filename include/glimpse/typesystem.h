@@ -1,16 +1,42 @@
-#ifndef __TYPESYSTEM_H__
-#define __TYPESYSTEM_H__
-#include <future.h>
+/* typesystem.h - The Glimpse Type System, Types, Handlers, Instance manipulation 
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#ifndef __GLIMPSE_TYPESYSTEM_H__
+#define __GLIMPSE_TYPESYSTEM_H__
 #include <stdlib.h>
 #include <stdint.h>
-#include <def.h>
-#include <data.h>
-#include <tree.h>
-#include <retval.h>
-#include <profiler.h>
+
 #ifdef THREAD_SAFE
 #include <pthread.h>
 #endif
+
+#include <glimpse/future.h>
+#include <glimpse/profiler.h>
+#include <glimpse/def.h>
+#include <glimpse/data.h>
+#include <glimpse/tree.h>
+#include <glimpse/retval.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #ifndef TYPEDESC_MAX_TYPEGROGUPS
 #	define TYPEDESC_MAX_TYPEGROUPS 1024
 #endif
@@ -149,6 +175,15 @@ typedef struct _glimpse_type_handler{
 	void* finalize_data;
 	int (*finalize)(void* data, void* user_data);
 
+#ifdef LAZY_INSTANCE
+	/* for lazy instance, the instance will hold the memory even
+	 * after its death. So a cleanup function is needed to release
+	 * the memory, if user want to reduce the memory usage
+	 */
+	void* cleanup_data;
+	int (*cleanup)(void* data, void* user_data); /* the cleanup function only release data instance, but not despose/finalize them */
+#endif
+
 	/* human readable type, for debug purpose */
 	char* (*tostring)(struct _glimpse_type_handler* type, char* buffer, size_t size);
 	
@@ -169,7 +204,11 @@ typedef struct _glimpse_type_group{
 
 /* type descriptor manipulation */
 GlimpseTypeDesc_t* glimpse_typesystem_typedesc_new(size_t sz_properties);
-GlimpseTypeDesc_t* glimpse_typesystem_typedesc_dup(GlimpseTypeDesc_t* type);
+GlimpseTypeDesc_t* glimpse_typesystem_typedesc_dup(GlimpseTypeDesc_t* type) 
+#ifndef USE_DUP_TYPEDESC
+	__attribute__((deprecated))
+#endif
+;
 void glimpse_typesystem_typedesc_free(GlimpseTypeDesc_t* typedesc);
 int glimpse_typesystem_typedesc_set_property(GlimpseTypeDesc_t* desc ,const char* key, const char* value);
 
@@ -179,7 +218,7 @@ size_t glimpse_typesystem_sizeof_typegroup_prop(const char* name);
 
 /* handler operations */
 void glimpse_typesystem_typehandler_free(GlimpseTypeHandler_t* handler); 
-void* glimpse_typesystem_typehandler_alloc_instance(GlimpseTypeHandler_t* handler);
+GlimpseTypePoolNode_t* glimpse_typesystem_typehandler_alloc_instance(GlimpseTypeHandler_t* handler);
 static inline void* glimpse_typesystem_typehandler_new_instance(GlimpseTypeHandler_t* handler);
 static inline void glimpse_typesystem_typehandler_free_instance(void* instance);
 #ifdef LAZY_INSTANCE
@@ -227,7 +266,7 @@ static inline void* glimpse_typesystem_typehandler_new_instance(GlimpseTypeHandl
 		ret = glimpse_typesystem_typehandler_alloc_instance(handler);
 	int rc = 0;
 	if(handler->init) rc = handler->init(ret->instance, handler->init_data);  /* init it */
-	if(ESUCCESS != rc)  /*if init failed insert the node into available list*/
+	if(GLIMPSE_ESUCCESS != rc)  /*if init failed insert the node into available list*/
 	{
 		ret->next = ret->handler->pool.available_list;
 		ret->handler->pool.available_list = ret;
@@ -243,6 +282,12 @@ static inline void* glimpse_typesystem_typehandler_new_instance(GlimpseTypeHandl
 #endif
 	return ret->instance;
 }
+/* when lazy instance is on, the free function will be called only after user requested do that 
+ * the finalize function do not call free function and return memory to memory pool
+ * it simple hold the memory for next cycle.
+ * And when user request a cleanup, the free function will be called and use the handler->cleanup
+ * function to recycle it's memory
+ */
 static inline void glimpse_typesystem_typehandler_free_instance(void* instance)
 {
 	if(NULL == instance) return;
@@ -252,7 +297,15 @@ static inline void glimpse_typesystem_typehandler_free_instance(void* instance)
 #ifdef THREAD_SAFE
 	pthread_mutex_lock(&node->handler->pool.mutex);
 #endif
+	/* if lazy instance is off, the finalize function will return the memory to the pool
+	 * so it's ok to not clean up it.
+	 * however, when the option is on, the finalize function do not return memory, so
+	 * if you want to clean the memory a cleanup function is needed 
+	 */
 	if(node->handler->finalize) node->handler->finalize(instance, node->handler->finalize_data);
+#ifdef LAZY_INSTANCE
+	if(node->handler->cleanup) node->handler->cleanup(instance, node->handler->cleanup_data);
+#endif
 	node->occupied = 0;
 #ifdef THREAD_SAFE
 	pthread_mutex_unlock(&node->mutex);
@@ -301,18 +354,21 @@ static inline GlimpseTypePoolNode_t* glimpse_typesystem_instance_object_get_pool
 static inline int glimpse_typesystem_typehandler_init_instance(void* instance)
 {
 	GlimpseTypePoolNode_t* node = glimpse_typesystem_instance_object_get_pool(instance);
-	if(NULL == node) return EINVAILDARG;
-	int rc = ESUCCESS;
+	if(NULL == node) return GLIMPSE_EINVAILDARG;
+	int rc = GLIMPSE_ESUCCESS;
 	if(node->handler->init) rc = node->handler->init(instance, node->handler->init_data);
 	return rc;
 }
 static inline int glimpse_typesystem_typehandler_fianlize_instance(void* instance)
 {
 	GlimpseTypePoolNode_t* node = glimpse_typesystem_instance_object_get_pool(instance);
-	if(NULL == node) return EINVAILDARG;
-	int rc = ESUCCESS;
+	if(NULL == node) return GLIMPSE_EINVAILDARG;
+	int rc = GLIMPSE_ESUCCESS;
 	if(node->handler->finalize) rc = node->handler->finalize(instance, node->handler->finalize_data);
 	return rc;
+}
+#endif
+#ifdef __cplusplus
 }
 #endif
 #endif

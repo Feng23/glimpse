@@ -1,4 +1,4 @@
-/* log.c -   
+/* def.h - helper functions and macroes
  *
  * Copyright 2013 Hao Hou <ghost89413@gmail.com>
  * 
@@ -17,16 +17,31 @@
  *
  */
 	
+#ifndef __GLIMPSE_DEF_H__
+#define __GLIMPSE_DEF_H__
 #include <stdio.h>
 #include <stdarg.h>
-#include <glimpse/log.h>
-void glimpse_log_write(ErrorLevel level, const char* file, const char* function,int line, const char* fmt,...)
+
+#include <glimpse/future.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+/* some macro defined in this file */
+#define GLIMPSE_OFFSET_OF(type,member) ((size_t)&(((type*)0)->member))
+static inline int glimpse_snprintf(char* buffer, size_t size, const char* fmt, ...)
 {
-	static const char LevelChar[] = "FEWNITD";
 	va_list ap;
-	fprintf(stderr,"%c[%s@%s:%3d] ",LevelChar[level],function,file,line);
 	va_start(ap,fmt);
-	vfprintf(stderr, fmt, ap);
+	int ret = vsnprintf(buffer, size, fmt, ap);
 	va_end(ap);
-	fprintf(stderr, "\n");
+	if(ret > size) return size;
+	else return ret;
 }
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

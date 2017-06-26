@@ -1,11 +1,36 @@
-#ifndef __ADDRESSING_H__
-#define __ADDRESSING_H__
-#include <future.h>
-#include <typesystem.h>
-#include <data.h>
-#include <vector.h>
+/* address.h - Fetch data address inside a data instance object
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#ifndef __GLIMPSE_ADDRESSING_H__
+#define __GLIMPSE_ADDRESSING_H__
 #include <stdarg.h>
-#include <def.h>
+
+#include <glimpse/future.h>
+#include <glimpse/def.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/data.h>
+#include <glimpse/vector.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #ifndef GLIMPSE_MAX_ADDRESS_OPS
 #	define GLIMPSE_MAX_ADDRESS_OPS 64
 #endif
@@ -43,10 +68,10 @@ typedef struct _glimpse_address_operations{
 	enum {
 		GLIMPSE_ADDRESSING_TYPE_LOG,
 		GLIMPSE_ADDRESSING_TYPE_VEC
-	} type:1;
+	} type:1;   /* Addressing type , inside a log or a vector */
 	union{
 		struct{
-			GlimpseDataOffset_t offset;
+			GlimpseDataOffset_t offset; /* The data offset inside a data-instance */
 		} log;
 		struct{
 			int index;  //special addressing index : GLIMPSE_ADDRESSING_VECTOR_SIZE <== '[#]' ; GLIMPSE_ADDRESSING_VECTOR_VARIABLE_INDEX <=='[?]'
@@ -54,6 +79,7 @@ typedef struct _glimpse_address_operations{
 	} oper;
 } GlimpseAddressOperations_t;
 
+/* Types for an address inside a data instance */
 typedef struct _glimpse_address{
 	uint8_t count;
 	GlimpseAddressOperations_t op[GLIMPSE_MAX_ADDRESS_OPS];
@@ -136,4 +162,7 @@ static inline void* __glimpse_address_fetch__(void** data, GlimpseAddress_t* add
 	va_end(ap);
 	return current_data;
 }
+#ifdef __cplusplus
+}
+#endif
 #endif

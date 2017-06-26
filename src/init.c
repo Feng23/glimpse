@@ -1,13 +1,32 @@
-#include <init.h>
-#include <symbol.h>
-#include <typesystem.h>
-#include <def.h>
-#include <log.h>
+/* init.c -   
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#include <glimpse/init.h>
+#include <glimpse/symbol.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/def.h>
+#include <glimpse/log.h>
 /* check types */
-#include <plugin.h>
-#include <typesystem.h>
-#include <data.h>
-#include <address.h>
+#include <glimpse/plugin.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/data.h>
+#include <glimpse/address.h>
 #define _GLIMPSE_CHECK_LAST(type,last) do{\
 	if(sizeof(type) != GLIMPSE_OFFSET_OF(type, last)){\
 		GLIMPSE_LOG_WARNING("`" #type "::" #last "' is not the last member, this may cause problem");\
@@ -42,7 +61,7 @@ int glimpse_init()
 	if(_glimpse_check_types())
 	{
 		GLIMPSE_LOG_FATAL("malformed structures, try to correct the issue above and recompile glimpse");
-		return EUNKNOWN;
+		return GLIMPSE_EUNKNOWN;
 	}
 	else
 		GLIMPSE_LOG_DEBUG("type check passed, no error found");

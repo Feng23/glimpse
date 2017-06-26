@@ -1,9 +1,32 @@
-#ifndef __TYPEPARSER_H__
-#define __TYPEPARSER_H__
-#include <typesystem.h>
-#include <def.h>
+/* typeparser.h - a parser that convert human-readable json-like type description into type descriptor
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#ifndef __GLIMPSE_TYPEPARSER_H__
+#define __GLIMPSE_TYPEPARSER_H__
+#include <glimpse/typesystem.h>
+#include <glimpse/def.h>
 #ifndef GLIMPSE_MAX_TYPE_ALIAS
 #	define GLIMPSE_MAX_TYPE_ALIAS 10240
+#endif
+
+#ifdef __cplusplus
+extern "C"{
 #endif
 /*
  * the syntax for type description:
@@ -38,4 +61,7 @@ typedef struct _glimpse_type_alias_t{
 } GlimpseTypeAlias_t;
 GlimpseTypeDesc_t* glimpse_typeparser_parse_type(const char* text);
 int glimpse_typeparser_alias(GlimpseTypeDesc_t* desc, const char* name);
+#ifdef __cplusplus
+}
+#endif
 #endif

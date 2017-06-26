@@ -1,13 +1,38 @@
-#ifndef __TREE_H__
-#define __TREE_H__
-#include <future.h>
-#include <log.h>
-#include <typesystem.h>
+/* tree.h - the parser tree 
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
+#ifndef __GLIMPSE_TREE_H__
+#define __GLIMPSE_TREE_H__
+
 #include <stdint.h>
-#include <data.h>
-#include <def.h>
+
+#include <glimpse/future.h>
+#include <glimpse/log.h>
+#include <glimpse/typesystem.h>
+#include <glimpse/data.h>
+#include <glimpse/def.h>
 #ifdef CHAR_HASH_TABLE
-#	include <chartable.h>
+#	include <glimpse/chartable.h>
+#endif
+
+#ifdef __cplusplus
+extern "C"{
 #endif
 
 typedef struct _glimpse_typedesc GlimpseTypeDesc_t;
@@ -74,4 +99,7 @@ static inline GlimpseParserStatus_t glimpse_tree_scan(GlimpseParserStatus_t stat
 	return status->s.child[(uint8_t)ch];
 #endif
 }
+#ifdef __cplusplus
+}
+#endif
 #endif

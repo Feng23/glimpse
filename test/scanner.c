@@ -1,8 +1,9 @@
-#include <pluginloader.h>
-#include <scanner.h>
-#include <init.h>
+#define USE_DUP_TYPEDESC
+#include <glimpse/pluginloader.h>
+#include <glimpse/scanner.h>
+#include <glimpse/init.h>
 #include <assert.h>
-#include <vector.h>
+#include <glimpse/vector.h>
 #include <integer/integer.h>
 #ifdef GPROF
 #include <google/profiler.h>
@@ -19,6 +20,7 @@ int case0_after_scan(void** result, void* userdata)
 	assert( expected[0] == *(int*)result[0]);
 	assert( expected[1] == *(int*)result[1]);
 	assert( expected[2] == *(int*)result[2]);
+	return 0;
 }
 
 void case0()
@@ -52,7 +54,6 @@ void case0()
 	expected[2] = 789;
 	glimpse_scanner_parse(input = "value1=123 value2=456 value3=789", thread_data);
 	int i = 0;
-	for(i = 0; i < 10000000; i ++)
 	{
 		expected[0] = 11111;
 		expected[1] = 22222;
@@ -80,6 +81,7 @@ int case1_check(void** result, void* userdata)
 	check_mylog(8,9,10,*(void**)glimpse_vector_get(a,2));
 	check_mylog(1,2,4,*(void**)glimpse_vector_get(b,0));
 	check_mylog(1,2,3,*(void**)glimpse_vector_get(b,1));
+	return 1;
 }
 void case1()
 {
@@ -92,7 +94,7 @@ void case1()
 	td->param.vector.basetype->builtin_type = GLIMPSE_TYPE_BUILTIN_SUBLOG;
 	td->param.vector.basetype->param.sublog.tree = glimpse_scanner_find_tree("mylog");
 	glimpse_tree_insert(tree, "a", td);
-	glimpse_tree_insert(tree, "b", glimpse_typesystem_typedesc_dup(td));
+	glimpse_tree_insert(tree, "b", td);
 	glimpse_scanner_set_defualt_tree("sublogtest");
 	glimpse_scanner_set_before_scan_callback(NULL, NULL);
 	glimpse_scanner_set_after_scan_callback(case1_check, NULL);

@@ -1,8 +1,27 @@
-#include <data.h>
-#include <log.h>
-#include <vector.h>
-#include <typesystem.h>
+/* data.c -   
+ *
+ * Copyright 2013 Hao Hou <ghost89413@gmail.com>
+ * 
+ * This file is part of Glimpse, a fast, flexible key-value scanner.
+ * 
+ * Glimpse is free software: you can redistribute it and/or modify it under the terms 
+ * of the GNU General Public License as published by the Free Software Foundation, 
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Glimpse is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Glimpse. 
+ * If not, see http://www.gnu.org/licenses/.
+ *
+ */
+	
 #include <string.h>
+#include <glimpse/data.h>
+#include <glimpse/log.h>
+#include <glimpse/vector.h>
+#include <glimpse/typesystem.h>
 GlimpseDataModel_t* glimpse_data_model_new()
 {
 	GlimpseDataModel_t* ret = (GlimpseDataModel_t*)malloc(sizeof(GlimpseDataModel_t));
@@ -24,9 +43,9 @@ void glimpse_data_model_free(GlimpseDataModel_t* model)
 
 int glimpse_data_model_insert(GlimpseDataModel_t* model, GlimpseTypeHandler_t* type)
 {
-	if(NULL == model || NULL == type) return EINVAILDARG;
+	if(NULL == model || NULL == type) return GLIMPSE_EINVAILDARG;
 	GlimpseDataMember_t* member = (GlimpseDataMember_t*)malloc(sizeof(GlimpseDataMember_t));
-	if(NULL == member) return EUNKNOWN;
+	if(NULL == member) return GLIMPSE_EUNKNOWN;
 	member->handler = type;
 	if(NULL == model->members) member->idx = 0;
 	else member->idx = model->members->idx + 1;
@@ -57,9 +76,9 @@ void glimpse_data_instance_free(GlimpseDataInstance_t* instance)
 }
 int glimpse_data_instance_init(GlimpseDataInstance_t* instance)
 {
-	if(NULL == instance) return EINVAILDARG;
+	if(NULL == instance) return GLIMPSE_EINVAILDARG;
 	GlimpseDataModel_t* model = instance->model;
-	if(NULL == model) return EINVAILDARG;
+	if(NULL == model) return GLIMPSE_EINVAILDARG;
 	
 	GlimpseDataMember_t* p, *q;
 	for(p = model->members; p; p = p->next)
@@ -67,7 +86,7 @@ int glimpse_data_instance_init(GlimpseDataInstance_t* instance)
 #ifdef LAZY_INSTANCE
 		if(instance->data[p->idx])
 		{
-			if(ESUCCESS != glimpse_typesystem_typehandler_init_instance(instance->data[p->idx]))
+			if(GLIMPSE_ESUCCESS != glimpse_typesystem_typehandler_init_instance(instance->data[p->idx]))
 				goto ERR;
 		}
 		else
@@ -77,7 +96,7 @@ int glimpse_data_instance_init(GlimpseDataInstance_t* instance)
 #endif /*LAZY_INSTANCE*/
 		if(NULL == instance->data[p->idx]) goto ERR;
 	}
-	return ESUCCESS;
+	return GLIMPSE_ESUCCESS;
 ERR:
 	for(q = model->members; q && q != p; q = q->next)
 #ifdef LAZY_INSTANCE
@@ -85,7 +104,7 @@ ERR:
 #else /*LAZY_INSTANCE*/
 		glimpse_typesystem_typehandler_free_instance(instance->data[p->idx]);
 #endif /*LAZY_INSTANCE*/
-	return EUNKNOWN;
+	return GLIMPSE_EUNKNOWN;
 }
 void glimpse_data_instance_finalize(GlimpseDataInstance_t* instance)
 {
@@ -99,3 +118,16 @@ void glimpse_data_instance_finalize(GlimpseDataInstance_t* instance)
 		glimpse_typesystem_typehandler_free_instance(instance->data[p->idx]);
 #endif /*LAZY_INSTANCE*/
 }
+#ifdef LAZY_INSTANCE
+void glimpse_data_instance_cleanup(GlimpseDataInstance_t* instance)
+{
+	if(NULL == instance) return;
+	GlimpseDataModel_t* model = instance->model;
+	GlimpseDataMember_t* p;
+	for(p = model->members; p; p = p->next)
+	{
+		glimpse_typesystem_typehandler_free_instance(instance->data[p->idx]);
+		instance->data[p->idx] = NULL;
+	}
+}
+#endif

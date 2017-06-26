@@ -1,11 +1,11 @@
-#include <address.h>
-#include <scanner.h>
-#include <pluginloader.h>
-#include <vector.h>
+#include <glimpse/address.h>
+#include <glimpse/scanner.h>
+#include <glimpse/pluginloader.h>
+#include <glimpse/vector.h>
 #include <integer/integer.h>
-#include <init.h>
+#include <glimpse/init.h>
 #include <TypeAPI.h>
-#include <typeparser.h>
+#include <glimpse/typeparser.h>
 #include <assert.h>
 #ifdef GPROF
 #include <google/profiler.h>
@@ -74,7 +74,7 @@ void case0()
 	exp[7] = glimpse_address_resolve("c[?][#]");
 	exp[8] = glimpse_address_resolve("c[?][?]");
 	int i;
-	for(i = 0; i < 10000000; i ++)
+	for(i = 0; i < 10; i ++)
 	glimpse_scanner_parse("a:a=1 b=2 c=3#a=4 b=5 c=6#a=7 b=8 c=9 d=10;"
 						  "b:a=0 b=2 c=4 d=1 e=2#a=1 b=2 c=3;"
 						  "c:1.2.3#4.5.6.8#9.10.11.12.13", thread_data);
